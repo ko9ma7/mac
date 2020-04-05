@@ -6,6 +6,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 
 import sys
+import os
+from multiprocessing import Process
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
 
@@ -18,6 +20,7 @@ userid = ""
 userpassword = ""
 SLEEPSEC = 2
 
+pcflag = False
 
 #%%
 def login_button(driver):
@@ -40,10 +43,11 @@ def search_site(driver):
     driver.get(itempage)
 
 def search_button(driver):
+    global pcflag
     i = 1
     driver.get(itempage)
     while(True):
-        try:            
+        try:
             driver.find_element_by_xpath("//div/a[@id='btnBuy']").click()
             print('go to payment.')
             break
@@ -51,7 +55,11 @@ def search_button(driver):
             try:
                 driver.find_element_by_xpath("//div/a[@onclick='add_wishlist(this, true);']")
                 driver.get(itempage)
-                print(i, ' no item. retry soon.')
+                if pcflag:
+                    print('pc2', i, ' no item. retry soon.')
+                else:
+                    print('pc1', i, ' no item. retry soon.')
+                
             except:
                 print('loading...')
                 cu = driver.current_url
@@ -59,8 +67,20 @@ def search_button(driver):
                 
             time.sleep(0.5)
             i = i + 1
-            if i > 500:
+            if i % 50 == 0:
+                os.system('cls')
+            if i == 145:
+                if pcflag:
+                    pc1.start()
+                else:
+                    pc2.start()
+            if i > 150:
                 driver.quit()
+                os.system('cls')
+                if pcflag:
+                    pc2.terminate()
+                else:
+                    pc1.terminate()
 
 def check_payment(driver):
     #time.sleep(SLEEPSEC)
@@ -71,28 +91,20 @@ def check_payment(driver):
             driver.find_element_by_xpath("//img[@id='btn_payment']").click()
         except:
             print('checking fail. retry soon.')
-            time.sleep(0.1)         
+            time.sleep(0.1)
 
+def work(pcflag):
+    driver = webdriver.Firefox()
+    driver.wait = WebDriverWait(driver, 2)
+
+    login_button(driver)    
+    search_site(driver)
+    search_button(driver)
+    check_payment(driver)
+
+pc1 = Process(target=work, args=(pcflag,))
+pc2 = Process(target=work, args=(~pcflag,))
 #%%
 if __name__ == "__main__":
-    while(True):
-        driver = webdriver.Firefox()
-        driver.wait = WebDriverWait(driver, 2)
-    
-        login_button(driver)
-        search_site(driver)
-        try:
-            search_button(driver)
-        except:
-            continue
-        check_payment(driver)
-
-    """
-    while(checkStock(driver, i)):
-        i += 1
-        time.sleep(SLEEPSEC)
-        if (i > LOOP and LOOP != -1):
-            break
-        driver.get(ITEMURL)
-    """
+    pc1.start()
 # %%
