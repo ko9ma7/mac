@@ -27,7 +27,7 @@ def login_button(driver):
     driver.find_element_by_xpath("//*[@id='password']").send_keys(userpassword)    
     driver.find_element_by_xpath("/html/body/div[4]/div[4]/div/form[1]/div/div/div[2]/div/div[1]/div/a").click()
     time.sleep(1)
-    print('login done.')
+    print('login done. lotte')
     
 def search_site(driver):
     global itempage
@@ -39,6 +39,7 @@ def search_site(driver):
             break
 
 def search_button(driver):
+    i=1
     driver.get(itempage)
     while(True):
         try:
@@ -47,6 +48,8 @@ def search_button(driver):
             break
         except:
             time.sleep(1)
+            print(i,'lotte')
+            i=i+1
             driver.get(itempage)
 
 def check_payment(driver):
